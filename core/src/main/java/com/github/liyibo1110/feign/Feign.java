@@ -171,7 +171,7 @@ public abstract class Feign {
                                                         closeAfterDecode,
                                                         decodeVoid,
                                                         responseInterceptorChain());
-            MethodHandler.Factory<Object> methodHandlerFactory =
+            InvocationHandlerFactory.MethodHandler.Factory<Object> methodHandlerFactory =
                     new SynchronousMethodHandler.Factory(
                             client,
                             retryer,

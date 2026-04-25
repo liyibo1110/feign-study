@@ -1,6 +1,5 @@
 package com.github.liyibo1110.feign;
 
-import java.lang.annotation.Target;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -8,7 +7,6 @@ import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -47,7 +45,7 @@ public class ReflectiveFeign<C> extends Feign {
     private final AsyncContextSupplier<C> defaultContextSupplier;
 
     ReflectiveFeign(Contract contract,
-                    MethodHandler.Factory<C> methodHandlerFactory,
+                    InvocationHandlerFactory.MethodHandler.Factory<C> methodHandlerFactory,
                     InvocationHandlerFactory invocationHandlerFactory,
                     AsyncContextSupplier<C> defaultContextSupplier) {
         this.targetToHandlersByName = new ParseHandlersByName<C>(contract, methodHandlerFactory);
@@ -74,7 +72,7 @@ public class ReflectiveFeign<C> extends Feign {
         /**
          * 步骤二：解析方法，生成MethodHandler
          */
-        Map<Method, MethodHandler> methodToHandler = targetToHandlersByName.apply(target, requestContext);
+        Map<Method, InvocationHandlerFactory.MethodHandler> methodToHandler = targetToHandlersByName.apply(target, requestContext);
 
         /**
          * 步骤三：创建InvocationHandler，create会生成FeignInvocationHandler对象
@@ -91,7 +89,7 @@ public class ReflectiveFeign<C> extends Feign {
          * 1、通过MethodHandle绑定到proxy。
          * 2、实现真正调用接口的默认实现。
          */
-        for (MethodHandler methodHandler : methodToHandler.values()) {
+        for (InvocationHandlerFactory.MethodHandler methodHandler : methodToHandler.values()) {
             if (methodHandler instanceof DefaultMethodHandler)
                 ((DefaultMethodHandler) methodHandler).bindTo(proxy);
         }
@@ -101,11 +99,11 @@ public class ReflectiveFeign<C> extends Feign {
 
     static class FeignInvocationHandler implements InvocationHandler {
         private final Target target;
-        private final Map<Method, MethodHandler> dispatch;
+        private final Map<Method, InvocationHandlerFactory.MethodHandler> dispatch;
 
-        FeignInvocationHandler(Target target, Map<Method, MethodHandler> dispatch) {
-            this.target = checkNotNull(target, "target");
-            this.dispatch = checkNotNull(dispatch, "dispatch for %s", target);
+        FeignInvocationHandler(Target target, Map<Method, InvocationHandlerFactory.MethodHandler> dispatch) {
+            this.target = Util.checkNotNull(target, "target");
+            this.dispatch = Util.checkNotNull(dispatch, "dispatch for %s", target);
         }
 
         @Override
@@ -148,9 +146,9 @@ public class ReflectiveFeign<C> extends Feign {
 
     private static final class ParseHandlersByName<C> {
         private final Contract contract;
-        private final MethodHandler.Factory<C> factory;
+        private final InvocationHandlerFactory.MethodHandler.Factory<C> factory;
 
-        ParseHandlersByName(Contract contract, MethodHandler.Factory<C> factory) {
+        ParseHandlersByName(Contract contract, InvocationHandlerFactory.MethodHandler.Factory<C> factory) {
             this.contract = contract;
             this.factory = factory;
         }
@@ -158,8 +156,8 @@ public class ReflectiveFeign<C> extends Feign {
         /**
          * 生成接口所有方法的到MethodHandler映射（主要通过Contract组件）。
          */
-        public Map<Method, MethodHandler> apply(Target target, C requestContext) {
-            final Map<Method, MethodHandler> result = new LinkedHashMap<>();
+        public Map<Method, InvocationHandlerFactory.MethodHandler> apply(Target target, C requestContext) {
+            final Map<Method, InvocationHandlerFactory.MethodHandler> result = new LinkedHashMap<>();
 
             // 将接口方法，生成MethodMetadata集合
             final List<MethodMetadata> metadataList = contract.parseAndValidateMetadata(target.type());
@@ -167,13 +165,13 @@ public class ReflectiveFeign<C> extends Feign {
                 final Method method = md.method();
                 if (method.getDeclaringClass() == Object.class)
                     continue;
-                final MethodHandler handler = createMethodHandler(target, md, requestContext);
+                final InvocationHandlerFactory.MethodHandler handler = createMethodHandler(target, md, requestContext);
                 result.put(method, handler);
             }
 
             for (Method method : target.type().getMethods()) {
                 if (Util.isDefault(method)) {
-                    final MethodHandler handler = new DefaultMethodHandler(method);
+                    final InvocationHandlerFactory.MethodHandler handler = new DefaultMethodHandler(method);
                     result.put(method, handler);
                 }
             }
@@ -181,7 +179,7 @@ public class ReflectiveFeign<C> extends Feign {
             return result;
         }
 
-        private MethodHandler createMethodHandler(final Target<?> target, final MethodMetadata md, final C requestContext) {
+        private InvocationHandlerFactory.MethodHandler createMethodHandler(final Target<?> target, final MethodMetadata md, final C requestContext) {
             if (md.isIgnored()) {
                 return args -> {
                     throw new IllegalStateException(md.configKey() + " is not a method handled by feign");
