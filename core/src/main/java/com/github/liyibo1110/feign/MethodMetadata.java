@@ -33,9 +33,9 @@ public final class MethodMetadata implements Serializable {
     private final RequestTemplate template = new RequestTemplate();
     private final List<String> formParams = new ArrayList<>();
     private final Map<Integer, Collection<String>> indexToName = new LinkedHashMap<>();
-    private final Map<Integer, Class<? extends Expander>> indexToExpanderClass = new LinkedHashMap<>();
+    private final Map<Integer, Class<? extends Param.Expander>> indexToExpanderClass = new LinkedHashMap<>();
     private final Map<Integer, Boolean> indexToEncoded = new LinkedHashMap<>();
-    private transient Map<Integer, Expander> indexToExpander;
+    private transient Map<Integer, Param.Expander> indexToExpander;
     private BitSet parameterToIgnore = new BitSet();
     private boolean ignored;
     private boolean bodyRequired = true;
@@ -146,16 +146,16 @@ public final class MethodMetadata implements Serializable {
         return indexToEncoded;
     }
 
-    public Map<Integer, Class<? extends Expander>> indexToExpanderClass() {
+    public Map<Integer, Class<? extends Param.Expander>> indexToExpanderClass() {
         return indexToExpanderClass;
     }
 
-    public MethodMetadata indexToExpander(Map<Integer, Expander> indexToExpander) {
+    public MethodMetadata indexToExpander(Map<Integer, Param.Expander> indexToExpander) {
         this.indexToExpander = indexToExpander;
         return this;
     }
 
-    public Map<Integer, Expander> indexToExpander() {
+    public Map<Integer, Param.Expander> indexToExpander() {
         return indexToExpander;
     }
 
