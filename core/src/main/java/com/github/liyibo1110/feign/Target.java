@@ -102,8 +102,8 @@ public interface Target<T> {
         private final String name;
 
         EmptyTarget(Class<T> type, String name) {
-            this.type = checkNotNull(type, "type");
-            this.name = checkNotNull(emptyToNull(name), "name");
+            this.type = Util.checkNotNull(type, "type");
+            this.name = Util.checkNotNull(Util.emptyToNull(name), "name");
         }
 
         public static <T> EmptyTarget<T> create(Class<T> type) {
