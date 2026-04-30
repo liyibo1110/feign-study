@@ -1,7 +1,5 @@
 package com.github.liyibo1110.feign;
 
-import jdk.jfr.Experimental;
-
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;

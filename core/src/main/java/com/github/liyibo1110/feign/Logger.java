@@ -103,10 +103,10 @@ public abstract class Logger {
                     log(configKey, ""); // CRLF
 
                 byte[] bodyData = Util.toByteArray(response.body().asInputStream());
-                ensureClosed(response.body());
+                Util.ensureClosed(response.body());
                 bodyLength = bodyData.length;
                 if (logLevel.ordinal() >= Level.FULL.ordinal() && bodyLength > 0)
-                    log(configKey, "%s", decodeOrDefault(bodyData, UTF_8, "Binary data"));
+                    log(configKey, "%s", Util.decodeOrDefault(bodyData, Util.UTF_8, "Binary data"));
                 log(configKey, "<--- END HTTP (%s-byte body)", bodyLength);
                 return response.toBuilder().body(bodyData).build();
             } else {

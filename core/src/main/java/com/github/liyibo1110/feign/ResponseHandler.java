@@ -1,5 +1,8 @@
 package com.github.liyibo1110.feign;
 
+import com.github.liyibo1110.feign.codec.Decoder;
+import com.github.liyibo1110.feign.codec.ErrorDecoder;
+
 import java.io.IOException;
 import java.lang.reflect.Type;
 

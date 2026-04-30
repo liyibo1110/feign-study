@@ -1,5 +1,9 @@
 package com.github.liyibo1110.feign;
 
+import com.github.liyibo1110.feign.codec.Decoder;
+import com.github.liyibo1110.feign.codec.Encoder;
+import com.github.liyibo1110.feign.codec.ErrorDecoder;
+
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -113,7 +117,7 @@ public abstract class Feign {
         }
 
         @Override
-        public Builder options(Options options) {
+        public Builder options(Request.Options options) {
             return super.options(options);
         }
 
@@ -153,7 +157,7 @@ public abstract class Feign {
         }
 
         public <T> T target(Class<T> apiType, String url) {
-            return target(new HardCodedTarget<>(apiType, url));
+            return target(new Target.HardCodedTarget<>(apiType, url));
         }
 
         public <T> T target(Target<T> target) {

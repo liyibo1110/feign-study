@@ -1,6 +1,7 @@
 package com.github.liyibo1110.feign;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -36,7 +37,7 @@ final class SynchronousMethodHandler implements InvocationHandlerFactory.MethodH
         /**
          * 查找本次调用的Options，类似connectTimeout、readTimeout、followRedirects等配置，Request里面没传，则会用默认的Options
          */
-        Options options = findOptions(argv);
+        Request.Options options = findOptions(argv);
         // 生成Retryer组件，clone是因为组件是有状态的，要避免共享
         Retryer retryer = this.methodHandlerConfiguration.getRetryer().clone();
         // 循环执行，因为可能会retry
@@ -50,7 +51,7 @@ final class SynchronousMethodHandler implements InvocationHandlerFactory.MethodH
                 } catch (RetryableException th) {
                     Throwable cause = th.getCause();
                     // 决定是否拆掉Feign外层的异常包装，直接把底层cause直接返回给用户
-                    if (methodHandlerConfiguration.getPropagationPolicy() == UNWRAP && cause != null)
+                    if (methodHandlerConfiguration.getPropagationPolicy() == ExceptionPropagationPolicy.UNWRAP && cause != null)
                         throw cause;
                     else
                         throw th;
@@ -66,7 +67,7 @@ final class SynchronousMethodHandler implements InvocationHandlerFactory.MethodH
         }
     }
 
-    Object executeAndDecode(RequestTemplate template, Options options) throws Throwable {
+    Object executeAndDecode(RequestTemplate template, Request.Options options) throws Throwable {
         Request request = targetRequest(template);
 
         if (methodHandlerConfiguration.getLogLevel() != Logger.Level.NONE) {
@@ -90,7 +91,7 @@ final class SynchronousMethodHandler implements InvocationHandlerFactory.MethodH
                                         e,
                                         elapsedTime(start));
             }
-            throw errorExecuting(request, e);
+            throw FeignException.errorExecuting(request, e);
         }
 
         // 调用responseHandler，把response转换成Java接口原来的返回类型
@@ -114,7 +115,7 @@ final class SynchronousMethodHandler implements InvocationHandlerFactory.MethodH
         return methodHandlerConfiguration.getTarget().apply(template);
     }
 
-    Options findOptions(Object[] argv) {
+    Request.Options findOptions(Object[] argv) {
         // 方法没有参数，则使用方法级的默认配置
         if (argv == null || argv.length == 0) {
             return this.methodHandlerConfiguration
@@ -123,8 +124,8 @@ final class SynchronousMethodHandler implements InvocationHandlerFactory.MethodH
         }
         // 方法参数如果显式带了Options，优先用这个
         return Stream.of(argv)
-                .filter(Options.class::isInstance)
-                .map(Options.class::cast)
+                .filter(Request.Options.class::isInstance)
+                .map(Request.Options.class::cast)
                 .findFirst()
                 .orElse(this.methodHandlerConfiguration
                                 .getOptions()
@@ -140,7 +141,7 @@ final class SynchronousMethodHandler implements InvocationHandlerFactory.MethodH
         private final Logger.Level logLevel;
         private final ExceptionPropagationPolicy propagationPolicy;
         private final RequestTemplateFactoryResolver requestTemplateFactoryResolver;
-        private final Options options;
+        private final Request.Options options;
 
         Factory(Client client,
                 Retryer retryer,
@@ -150,7 +151,7 @@ final class SynchronousMethodHandler implements InvocationHandlerFactory.MethodH
                 Logger.Level logLevel,
                 ExceptionPropagationPolicy propagationPolicy,
                 RequestTemplateFactoryResolver requestTemplateFactoryResolver,
-                Options options) {
+                Request.Options options) {
             this.client = Util.checkNotNull(client, "client");
             this.retryer = Util.checkNotNull(retryer, "retryer");
             this.requestInterceptors = Util.checkNotNull(requestInterceptors, "requestInterceptors");

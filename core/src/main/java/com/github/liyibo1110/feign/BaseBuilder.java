@@ -1,5 +1,13 @@
 package com.github.liyibo1110.feign;
 
+import com.github.liyibo1110.feign.codec.Codec;
+import com.github.liyibo1110.feign.codec.Decoder;
+import com.github.liyibo1110.feign.codec.DefaultDecoder;
+import com.github.liyibo1110.feign.codec.DefaultEncoder;
+import com.github.liyibo1110.feign.codec.DefaultErrorDecoder;
+import com.github.liyibo1110.feign.codec.Encoder;
+import com.github.liyibo1110.feign.codec.ErrorDecoder;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -26,7 +34,7 @@ public abstract class BaseBuilder<B extends BaseBuilder<B, T>, T> implements Clo
     protected Contract contract = new DefaultContract();
     protected Retryer retryer = new DefaultRetryer();
 
-    protected Logger logger = new NoOpLogger();
+    protected Logger logger = new Logger.NoOpLogger();
 
     protected Encoder encoder = new DefaultEncoder();
     protected Decoder decoder = new DefaultDecoder();
@@ -37,13 +45,13 @@ public abstract class BaseBuilder<B extends BaseBuilder<B, T>, T> implements Clo
 
     protected QueryMapEncoder queryMapEncoder = QueryMap.MapEncoder.FIELD.instance();
     protected ErrorDecoder errorDecoder = new DefaultErrorDecoder();
-    protected Options options = new Options();
+    protected Request.Options options = new Request.Options();
 
     /** 覆盖Feign内部反射分发的实现方式 */
     protected InvocationHandlerFactory invocationHandlerFactory = new DefaultInvocationHandlerFactory();
 
     protected boolean dismiss404;
-    protected ExceptionPropagationPolicy propagationPolicy = NONE;
+    protected ExceptionPropagationPolicy propagationPolicy = ExceptionPropagationPolicy.NONE;
     protected List<Capability> capabilities = new ArrayList<>();
 
     public BaseBuilder() {
@@ -109,7 +117,7 @@ public abstract class BaseBuilder<B extends BaseBuilder<B, T>, T> implements Clo
     }
 
     public B mapAndDecode(ResponseMapper mapper, Decoder decoder) {
-        this.decoder = new ResponseMappingDecoder(mapper, decoder);
+        this.decoder = new Feign.ResponseMappingDecoder(mapper, decoder);
         return thisB;
     }
 
@@ -137,7 +145,7 @@ public abstract class BaseBuilder<B extends BaseBuilder<B, T>, T> implements Clo
         return thisB;
     }
 
-    public B options(Options options) {
+    public B options(Request.Options options) {
         this.options = options;
         return thisB;
     }

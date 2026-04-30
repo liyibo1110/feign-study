@@ -1,5 +1,8 @@
 package com.github.liyibo1110.feign;
 
+import com.github.liyibo1110.feign.querymap.BeanQueryMapEncoder;
+import com.github.liyibo1110.feign.querymap.FieldQueryMapEncoder;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 

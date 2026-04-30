@@ -1,5 +1,7 @@
 package com.github.liyibo1110.feign;
 
+import java.util.List;
+
 /**
  * @author liyibo
  * @date 2026-04-24 16:02

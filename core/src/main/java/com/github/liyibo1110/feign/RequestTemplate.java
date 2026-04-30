@@ -1,5 +1,9 @@
 package com.github.liyibo1110.feign;
 
+import com.github.liyibo1110.feign.template.BodyTemplate;
+import com.github.liyibo1110.feign.template.HeaderTemplate;
+import com.github.liyibo1110.feign.template.QueryTemplate;
+import com.github.liyibo1110.feign.template.UriTemplate;
 import com.github.liyibo1110.feign.template.UriUtils;
 
 import java.io.Serializable;
@@ -10,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -65,7 +70,7 @@ public final class RequestTemplate implements Serializable {
     private BodyTemplate bodyTemplate;
     private Request.Body body = Request.Body.empty();
 
-    private HttpMethod method;
+    private Request.HttpMethod method;
     private transient Charset charset = Util.UTF_8;
 
     /** true表示路径变量里的"/"，不被编码成%2F，false表示会被编码成%2F，例如a/b -> a%2Fb */
@@ -89,7 +94,7 @@ public final class RequestTemplate implements Serializable {
                             String fragment,
                             UriTemplate uriTemplate,
                             BodyTemplate bodyTemplate,
-                            HttpMethod method,
+                            Request.HttpMethod method,
                             Charset charset,
                             Request.Body body,
                             boolean decodeSlash,
@@ -242,14 +247,14 @@ public final class RequestTemplate implements Serializable {
     public RequestTemplate method(String method) {
         Util.checkNotNull(method, "method");
         try {
-            this.method = HttpMethod.valueOf(method);
+            this.method = Request.HttpMethod.valueOf(method);
         } catch (IllegalArgumentException iae) {
             throw new IllegalArgumentException("Invalid HTTP Method: " + method);
         }
         return this;
     }
 
-    public RequestTemplate method(HttpMethod method) {
+    public RequestTemplate method(Request.HttpMethod method) {
         Util.checkNotNull(method, "method");
         this.method = method;
         return this;
